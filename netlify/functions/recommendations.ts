@@ -1,4 +1,4 @@
-import { GoogleGenAI, SchemaType } from "@google/genai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 export const handler = async (event: any) => {
   // Only allow POST requests
@@ -12,7 +12,7 @@ export const handler = async (event: any) => {
   try {
     const { userContext, products } = JSON.parse(event.body);
 
-    const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {

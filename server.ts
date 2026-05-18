@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,13 +12,9 @@ async function startServer() {
 
   app.use(express.json());
 
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
-    }
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
   });
 
   // AI Product Recommendation Endpoint
@@ -26,21 +22,23 @@ async function startServer() {
     try {
       const { userContext, products } = req.body;
       
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `You are an expert e-commerce recommendation engine for a Pakistani kids brand "LittleHaven". 
-        Based on the current user context: "${userContext}", select the top 3 most relevant products from this list: ${JSON.stringify(products)}.
-        Return only the IDs of the products in a JSON array.`,
-        config: {
+      const prompt = `You are an expert e-commerce recommendation engine for a Pakistani kids brand "LittleHaven". 
+      Based on the current user context: "${userContext}", select the top 3 most relevant products from this list: ${JSON.stringify(products)}.
+      Return only the IDs of the products in a JSON array.`;
+
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
           responseMimeType: "application/json",
           responseSchema: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING }
           }
         }
       });
 
-      const recommendedIds = JSON.parse(response.text || "[]");
+      const responseText = result.response.text();
+      const recommendedIds = JSON.parse(responseText || "[]");
       res.json({ recommendedIds });
     } catch (error) {
       console.error("Gemini Error:", error);
