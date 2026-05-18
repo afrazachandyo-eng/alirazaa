@@ -1,0 +1,8 @@
+{
+  "name": "LittleHaven",
+  "description": "Premium e-commerce platform for baby and kids' essentials, fashion, and toys. Sourced with care, delivered across Pakistan with love.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
